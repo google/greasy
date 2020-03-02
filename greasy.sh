@@ -1,6 +1,8 @@
 # Git Rebase Easy (GREasy)
 # Jopra@'s little git scripts
 
+HOME="`cd;pwd`"
+
 # Installs Chrome's very handy depot management tools.
 # Probably not particularly useful for all devs, but may help.
 function get_depot_tools() {
@@ -8,8 +10,8 @@ function get_depot_tools() {
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ~/depot_tools
 }
 
-if [[ -f "~/depot_tools" ]]; then
-  export PATH=$PATH:~/depot_tools
+if [[ -d "$HOME/depot_tools" ]]; then
+  export PATH="$PATH:$HOME/depot_tools"
 fi
 
 # Creates temporary commits (this is roughly equivalent to `git stash`, but instead of stashing to
@@ -64,6 +66,7 @@ _P() {
 
 # Just like P, but for all branches and fetches the upstream.
 # Should be used regularly to ensure that all branches are up to date with the upstream.
+# (Requires depot_tools)
 function PA(){
   git fetch
   for branch in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g")
