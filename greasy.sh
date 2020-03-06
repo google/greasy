@@ -68,13 +68,20 @@ _P() {
 # Should be used regularly to ensure that all branches are up to date with the upstream.
 # (Requires depot_tools)
 function PA(){
-  git fetch
+  from_branch=$(branch)
+  git fetch upstream
+  git fetch origin
   for branch in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g")
   do
     echo "Pulling $branch"
-    P $branch
+    P $branch || return 1
   done
+  git checkout $from_branch
 }
+
+# Returns the current branch.
+# Useful for short commands like `git push origin $(branch) -f`
+alias branch="git branch | grep '*' | sed 's/* \(.*\)$/\1/'"
 
 # Grep for lines stored in git
 alias gg="git grep"
@@ -107,3 +114,11 @@ alias D="git diff --staged --diff-algorithm=patience"
 
 # Attempt to push your changes to whichever git back end is in use.
 alias p="git push || git cl upload || repo upload ."
+
+function hub() {
+  remote=$(git remote -v | grep origin | tr '\t' ' ' | cut -f2 -d' ' | head -n1)
+  url=$(echo "$remote" | sed "s|git@|http://|" | sed "s/com:/com\\//")
+  xdg-open "$url"
+}
+alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs \"${EDITOR}\""
+alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \"${EDITOR}\""
