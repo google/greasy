@@ -69,8 +69,11 @@ _P() {
 # (Requires depot_tools)
 function PA(){
   from_branch=$(branch)
-  git fetch upstream
-  git fetch origin
+  for branch in $(git remote)
+  do
+    git fetch "${branch}"
+  done
+
   for branch in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g")
   do
     echo "Pulling $branch"
@@ -90,7 +93,7 @@ alias gl="git ls-files | grep"
 # Takes the output from gg or gl and opens each file in your editor of choice.
 # Example: `gg " wat " | ge` will open all files stored in git containing ' wat '.
 function ge() {
-  grep "[/\\\.]" | sed "s/.*-> //" | sed "s/:.*//" | sed "s/ *|.*//" | sort | uniq | xargs "$EDITOR"
+  grep "[/\\\.]" | sed "s/.*-> //" | sed "s/:.*//" | sed "s/ *|.*//" | sort | uniq | xargs $EDITOR
 }
 
 # Shows all git branches (works best with depot_tools)
@@ -120,5 +123,5 @@ function hub() {
   url=$(echo "$remote" | sed "s|git@|http://|" | sed "s/com:/com\\//")
   xdg-open "$url"
 }
-alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs \"${EDITOR}\""
-alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \"${EDITOR}\""
+alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs $EDITOR"
+alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs $EDITOR"
