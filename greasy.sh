@@ -125,3 +125,31 @@ function hub() {
 }
 alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs $EDITOR"
 alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs $EDITOR"
+
+declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
+
+function run_inner() {
+  for config_file manager in ${(kv)project_type}; do
+    if [[ -f "$config_file" ]]; then
+      echo "${manager} @ $(pwd)"
+      eval "$manager $@"
+      exit
+    fi
+  done
+  if [ "$(pwd)" = "/" ]; then
+    echo "<Unknown project>"
+    exit 1
+  fi
+}
+function run() {
+  (
+    while true; do
+      run_inner "$@"
+      cd ".."
+    done
+  )
+}
+
+alias r="run"
+alias t="run test"
+alias b="run build"
