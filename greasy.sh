@@ -47,7 +47,7 @@ function unmtmp() {
   git reset 'HEAD~'
   git stash
   snd="$(git log | head -n 1 | grep ' TMP - ')"
-  if [[! -z $fst ]]; then
+  if [[ ! -z $fst ]]; then
     git reset 'HEAD~'
     git add --all
   fi
@@ -57,7 +57,7 @@ function unmtmp() {
 # Checks out a branch and rebases against the parent branch.
 # Optional argument is which branch to checkout (otherwise the current branch will be used).
 function P() {
-  if [[! -z $1 ]]; then
+  if [[ ! -z $1 ]]; then
     git checkout "$1"
   fi
   git pull --rebase
