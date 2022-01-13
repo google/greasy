@@ -18,7 +18,7 @@
 
 # Installs Chrome's very handy depot management tools.
 # https://dev.chromium.org/developers/how-tos/install-depot-tools
-HOME="`cd;pwd`"
+HOME="$(cd;pwd)"
 DEPOT_TOOLS="$HOME/depot_tools"
 function get_depot_tools() {
   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "$DEPOT_TOOLS"
@@ -29,7 +29,7 @@ fi
 
 # 'Stash' changes on the current branch using temporary commits. Roughly eq to `git stash`.
 function mtmp() {
-  MSG=" - $@"
+  MSG=" - $*"
   if [[ -z $1 ]]; then
     MSG=""
   fi
@@ -46,8 +46,8 @@ function unmtmp() {
   fi
   git reset 'HEAD~'
   git stash
-  snd="$(git log | head -n 1 | grep ' TMP - ')"
-  if [[ ! -z $fst ]]; then
+  git log | head -n 1 | grep ' TMP - '
+  if [[ -n $fst ]]; then
     git reset 'HEAD~'
     git add --all
   fi
@@ -57,7 +57,7 @@ function unmtmp() {
 # Checks out a branch and rebases against the parent branch.
 # Optional argument is which branch to checkout (otherwise the current branch will be used).
 function P() {
-  if [[ ! -z $1 ]]; then
+  if [[ -n $1 ]]; then
     git checkout "$1"
   fi
   git pull --rebase
@@ -65,7 +65,7 @@ function P() {
 
 # Auto completer for P. Can be used with zsh's `compdef _P P`.
 _P() {
-  branches=($(git branch --no-column --no-color -a | sed "s/[ *] //"))
+  export branches=($(git branch --no-column --no-color -a | sed "s/[ *] //"))
   compadd -l -a -- branches
 }
 
@@ -77,9 +77,9 @@ function PA() {
   done
   for b in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g"); do
     echo "Pulling $b"
-    P $b || return 1
+    P "$b" || return 1
   done
-  git checkout $from_branch
+  git checkout "$from_branch"
 }
 
 # Returns the current branch for short commands like `git push origin $(branch) -f`.
@@ -95,7 +95,7 @@ alias gl="git ls-files | grep" # files
 # Takes the output from gg or gl and opens each file in your editor of choice.
 # Example: `gg " wat " | ge` will open all files stored in git containing ' wat '.
 function ge() {
-  grep "[/\\\.]" | sed "s/.*-> //" | sed "s/:.*//" | sed "s/ *|.*//" | sort | uniq | xargs $EDITOR
+  grep "[/\\\.]" | sed "s/.*-> //" | sed "s/:.*//" | sed "s/ *|.*//" | sort | uniq | xargs "$EDITOR"
 }
 # Single letter shortenings for extremely common git commands
 alias s="git status -sb 2> /dev/null"
@@ -109,15 +109,16 @@ function hub() {
   remote=$(git remote -v | grep origin | tr '\t' ' ' | cut -f2 -d' ' | head -n1)
   xdg-open "$(echo "$remote" | sed "s|git@|http://|" | sed "s/com:/com\\//")"
 }
-alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs $EDITOR"
-alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs $EDITOR"
+alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs \$EDITOR"
+alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \$EDITOR"
 
 declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
 function __run() {
-  for config_file manager in ${(kv)project_type}; do
+  for config_file in "${!project_type[@]}"; do
     if [[ -f "$config_file" ]]; then
+      manager="${project_type[$i]}"
       echo "${manager} @ $(pwd)"
-      eval "$manager $@"
+      eval "$manager $*"
       exit
     fi
   done
