@@ -25,3 +25,11 @@ Checkout greasy.zsh for the list of aliases and functions that GREasy makes avai
 - grep
 - sed
 - xargs
+
+# Contributing
+
+Please see the project's [code of conduct](./docs/code-of-conduct.md) and [contributing guide](./docs/contributing.md).
+
+# License
+
+Please see the project's [license](./LICENSE).
