@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/zsh -eu
 #
 # Copyright 2022 Google LLC
 #
@@ -113,10 +113,10 @@ alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->
 alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \$EDITOR"
 
 declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
+
 function __run() {
-  for config_file in "${!project_type[@]}"; do
+  for config_file manager in ${(kv)project_type}; do
     if [[ -f "$config_file" ]]; then
-      manager="${project_type[$i]}"
       echo "${manager} @ $(pwd)"
       eval "$manager $*"
       exit
