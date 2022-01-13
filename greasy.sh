@@ -1,134 +1,103 @@
-# Git Rebase Easy (GREasy)
-# Jopra@'s little git scripts
-
-HOME="`cd;pwd`"
+# Git Rebase (and run) Easy (GREasy)
 
 # Installs Chrome's very handy depot management tools.
-# Probably not particularly useful for all devs, but may help.
+# https://dev.chromium.org/developers/how-tos/install-depot-tools
+HOME="`cd;pwd`"
+DEPOT_TOOLS="$HOME/depot_tools"
 function get_depot_tools() {
-  # https://dev.chromium.org/developers/how-tos/install-depot-tools
-  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ~/depot_tools
+  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git "$DEPOT_TOOLS"
 }
-
-if [[ -d "$HOME/depot_tools" ]]; then
-  export PATH="$PATH:$HOME/depot_tools"
+if [[ -d "$DEPOT_TOOLS" ]]; then
+  export PATH="$PATH:$DEPOT_TOOLS"
 fi
 
-# Creates temporary commits (this is roughly equivalent to `git stash`, but instead of stashing to
-# the git stash it stashes to the current branch.
+# 'Stash' changes on the current branch using temporary commits. Roughly eq to `git stash`.
 function mtmp() {
+  MSG=" - $@"
   if [[ -z $1 ]]; then
     MSG=""
-  else
-    MSG=" - $@"
   fi
   git commit -m "TMP$MSG - added" --no-verify
   git add --all
   git commit -m "TMP$MSG - modified" --no-verify
 }
 
-# Un-does an `mtmp` `git stash pop`.
-# Note: This will not fail if there are no tmp commits, it will log and continue.
+# Un-does an `mtmp` roughly eq to `git stash pop`.
 function unmtmp() {
   fst="$(git log | head -n 1 | grep ' TMP - ')"
   if [[ -z $fst ]]; then
-    echo 'No tmps found'
-  else
-    git reset 'HEAD~'
-    git stash
-    snd="$(git log | head -n 1 | grep ' TMP - ')"
-    if [[ -z $fst ]]; then
-      echo 'One tmp found'
-    else
-      git reset 'HEAD~'
-      git add --all
-    fi
-    git stash pop
+    echo 'No tmps found'; return
   fi
+  git reset 'HEAD~'
+  git stash
+  snd="$(git log | head -n 1 | grep ' TMP - ')"
+  if [[! -z $fst ]]; then
+    git reset 'HEAD~'
+    git add --all
+  fi
+  git stash pop
 }
 
-# Checks out a branch and rebases against the parent branch
+# Checks out a branch and rebases against the parent branch.
 # Optional argument is which branch to checkout (otherwise the current branch will be used).
-function P(){
-  if [[ -z $1 ]]; then
-  else
+function P() {
+  if [[! -z $1 ]]; then
     git checkout "$1"
   fi
   git pull --rebase
 }
 
-# Auto completer for P
-# Can be used with zsh's `compdef _P P`
+# Auto completer for P. Can be used with zsh's `compdef _P P`.
 _P() {
   branches=($(git branch --no-column --no-color -a | sed "s/[ *] //"))
   compadd -l -a -- branches
 }
 
-# Just like P, but for all branches and fetches the upstream.
-# Should be used regularly to ensure that all branches are up to date with the upstream.
-# (Requires depot_tools)
-function PA(){
+# Just like P, but for all branches and fetches the upstream. Note: Requires depot_tools.
+function PA() {
   from_branch=$(branch)
-  for branch in $(git remote)
-  do
-    git fetch "${branch}"
+  for r in $(git remote); do
+    git fetch "$r"
   done
-
-  for branch in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g")
-  do
-    echo "Pulling $branch"
-    P $branch || return 1
+  for b in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g"); do
+    echo "Pulling $b"
+    P $b || return 1
   done
   git checkout $from_branch
 }
 
-# Returns the current branch.
-# Useful for short commands like `git push origin $(branch) -f`
+# Returns the current branch for short commands like `git push origin $(branch) -f`.
 alias branch="git branch | grep '*' | sed 's/* \(.*\)$/\1/'"
+# Shows all git branches (works best with depot_tools).
+alias map="(git status 1&> /dev/null 2&>/dev/null && (git map-branches -v || git branch -vv)) || ls"
+alias continue="git rebase --continue || git merge --continue"
+alias skip="git rebase --skip"
 
-# Grep for lines stored in git
-alias gg="git grep"
-# Grep for files stored in git
-alias gl="git ls-files | grep"
+# Grep for git for:
+alias gg="git grep" # lines
+alias gl="git ls-files | grep" # files
 # Takes the output from gg or gl and opens each file in your editor of choice.
 # Example: `gg " wat " | ge` will open all files stored in git containing ' wat '.
 function ge() {
   grep "[/\\\.]" | sed "s/.*-> //" | sed "s/:.*//" | sed "s/ *|.*//" | sort | uniq | xargs $EDITOR
 }
-
-# Shows all git branches (works best with depot_tools)
-alias map="(git status 1&> /dev/null 2&>/dev/null && (git map-branches -v || git branch -vv)) || ls"
-
-# Shortenings for common git commands
-alias continue="git rebase --continue || git merge --continue"
-alias skip="git rebase --skip"
-alias checkout="git checkout"
-
 # Single letter shortenings for extremely common git commands
-alias s="/usr/bin/clear && git status -sb 2> /dev/null"
+alias s="git status -sb 2> /dev/null"
 alias a="git add"
 alias m="git commit -m "
-
-# Show all changes
 alias d="git diff --diff-algorithm=patience"
-
-# Show all staged changes
 alias D="git diff --staged --diff-algorithm=patience"
-
-# Attempt to push your changes to whichever git back end is in use.
 alias p="git push || git cl upload || repo upload ."
 
 function hub() {
   remote=$(git remote -v | grep origin | tr '\t' ' ' | cut -f2 -d' ' | head -n1)
-  url=$(echo "$remote" | sed "s|git@|http://|" | sed "s/com:/com\\//")
-  xdg-open "$url"
+  xdg-open "$(echo "$remote" | sed "s|git@|http://|" | sed "s/com:/com\\//")"
 }
 alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs $EDITOR"
 alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs $EDITOR"
 
 declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
-
-function run_inner() {
+function __run() {
   for config_file manager in ${(kv)project_type}; do
     if [[ -f "$config_file" ]]; then
       echo "${manager} @ $(pwd)"
@@ -137,18 +106,14 @@ function run_inner() {
     fi
   done
   if [ "$(pwd)" = "/" ]; then
-    echo "<Unknown project>"
-    exit 1
+    echo "<Unknown project>" && exit 1
   fi
 }
-function run() {
-  (
-    while true; do
-      run_inner "$@"
-      cd ".."
-    done
-  )
-}
+function run() {(
+  while true; do
+    __run "$@"; cd ".."
+  done
+)}
 
 alias r="run"
 alias t="run test"
