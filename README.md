@@ -1,6 +1,8 @@
 # Git Rebase (and run) Easy (GREasy)
 ## Jopra's GIT scripts - 2022
 
+#### This is not an officially supported Google product
+
 # Installation
 
 ```bash
