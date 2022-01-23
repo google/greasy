@@ -32,6 +32,8 @@ Checkout greasy.zsh for the list of aliases and functions that GREasy makes avai
 
 Please see the project's [code of conduct](./docs/code-of-conduct.md) and [contributing guide](./docs/contributing.md).
 
+Feel free to join [GReasy's discussion group](https://groups.google.com/g/greasy)!
+
 # License
 
 Please see the project's [license](./LICENSE).
