@@ -99,6 +99,8 @@ function ge() {
 }
 # List authors
 alias ga="git ls-files | while read f; do git blame --line-porcelain \"$f\" | grep \"^author \" | sed \"s/author //\"; done | sort -f | uniq -ic | sort -n"
+# Rename a branch
+alias gm="git branch -m"
 # Single letter shortenings for extremely common git commands
 alias s="git status -sb 2> /dev/null"
 alias a="git add"
