@@ -54,9 +54,16 @@ function unmtmp() {
   git stash pop
 }
 
+function fetch_all() {
+  for r in $(git remote); do
+    git fetch "$r"
+  done
+}
+
 # Checks out a branch and rebases against the parent branch.
 # Optional argument is which branch to checkout (otherwise the current branch will be used).
 function P() {
+  fetch_all
   if [[ -n $1 ]]; then
     git checkout "$1"
   fi
@@ -71,10 +78,8 @@ _P() {
 
 # Just like P, but for all branches and fetches the upstream. Note: Requires depot_tools.
 function PA() {
+  fetch_all
   from_branch=$(branch)
-  for r in $(git remote); do
-    git fetch "$r"
-  done
   for b in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g"); do
     echo "Pulling $b"
     P "$b" || return 1
@@ -105,7 +110,7 @@ alias ga="git ls-files | while read f; do git blame --line-porcelain \"\$f\" | g
 # Rename a branch
 alias gm="git branch -m"
 # Single letter shortenings for extremely common git commands
-alias s="git status -sb 2> /dev/null"
+alias s="git status -sb 2> /dev/null || ls"
 alias a="git add"
 alias m="git commit -m "
 alias d="git diff --diff-algorithm=patience"
@@ -119,9 +124,9 @@ function hub() {
 alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs \$EDITOR"
 alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \$EDITOR"
 
-declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
-
 function __run() {
+  declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
+
   for config_file manager in ${(kv)project_type}; do
     if [[ -f "$config_file" ]]; then
       echo "${manager} @ $(pwd)"
