@@ -128,7 +128,7 @@ function __run() {
   declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
 
   for config_file manager in ${(kv)project_type}; do
-    if [[ -f "$config_file" ]]; then
+    if [[ -f "./$config_file" ]]; then
       echo "${manager} @ $(pwd)"
       eval "$manager $*"
       exit
