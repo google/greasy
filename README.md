@@ -16,12 +16,63 @@ Additionally, add the following to your `.zshrc`:
 
 # Usage
 
-Checkout greasy.zsh for the list of aliases and functions that GREasy makes available.
+GREasy provides a set of aliases for quick Git work: e.g.
+```bash
+a file # git add file
+m "$MSG" # git commit -m "$MSG"
+d # git diff
+D # git diff --staged
+gg # git grep
+gl # git ls-files | grep
+p # git push # (dual to P)
+continue # git rebase --continue
+skip # git rebase --skip
+```
+
+GREeasy also provides some more complex methods that make common tasks easy.
+```bash
+branch # gets the current branch name
+#e.g.
+git push origin $(branch)
+```
+
+```bash
+P # git pull --rebase
+P $branch # git checkout $branch; git pull --rebase
+```
+
+```bash
+PA # git pull --rebase, but for ALL branches, pausing if there are merge conflicts.
+```
+
+```bash
+ge "$PATTERN" # greps for "$PATTERN" and opens the results in your $EDITOR.
+```
+
+```bash
+hub # opens the current repo's remote on the web, assuming it uses a 'github like' URL format.
+```
+
+```bash
+edit # opens all the uncommited files in your $EDITOR.
+last # opens all the files in the most recent commit in your $EDITOR.
+```
+
+```bash
+
+run $CMD # attempts to run $CMD in the appropriate package/tooling for this project.
+# See project_type in greasy.zsh for more details.
+
+# Aliases:
+r = run  # e.g. node / cargo
+t = run test # node test / cargo test
+b = run build # node build / cargo build
+```
+
+Checkout greasy.zsh for the full list of aliases and functions that GREasy makes available.
 
 # Dependencies
 
-- depot_tools (can be installed via GREasy's `get_depot_tools` function)
-  - python2
 - zsh
 - git
 - grep

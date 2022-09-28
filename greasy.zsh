@@ -80,7 +80,10 @@ _P() {
 function PA() {
   fetch_all
   from_branch=$(branch)
-  for b in $(git map-branches --no-color | grep "  " | sed "s/[ *]*//g"); do
+  for r in $(git remote); do
+    git fetch "$r"
+  done
+  for b in $(git branch --no-color | sed "s/^[* ]*//"); do
     echo "Pulling $b"
     P "$b" || return 1
   done
@@ -90,7 +93,7 @@ function PA() {
 # Returns the current branch for short commands like `git push origin $(branch) -f`.
 alias branch="git branch --color=never | grep '\*' | sed 's/* \(.*\)$/\1/' | head -n 1"
 # Shows all git branches (works best with depot_tools).
-alias map="(git status 1&> /dev/null 2&>/dev/null && (git map-branches -v || git --no-pager branch -vv --color=always)) || ls"
+alias map="(git status 1&> /dev/null 2&>/dev/null && git --no-pager branch -vv) || ls"
 alias continue="git rebase --continue || git merge --continue"
 alias skip="git rebase --skip"
 
