@@ -118,13 +118,13 @@ alias a="git add"
 alias m="git commit -m "
 alias d="git diff --diff-algorithm=patience"
 alias D="git diff --staged --diff-algorithm=patience"
-alias p="git push || git cl upload || repo upload ."
+alias p="git push"
 
 function hub() {
   remote=$(git remote -v | grep origin | tr '\t' ' ' | cut -f2 -d' ' | head -n1)
   xdg-open "$(echo "$remote" | sed "s|git@|http://|" | sed "s/com:/com\\//")"
 }
-alias edit="git status | grep \" *.*:  *.*\" | sed \"s/^.*: *//\" | sed \"s/.*->//\" | xargs \$EDITOR"
+alias edit="git status --porcelain | sed \"s/^..//\" | xargs \$EDITOR"
 alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \$EDITOR"
 
 function __run() {
