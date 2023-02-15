@@ -128,7 +128,7 @@ alias edit="git status --porcelain | sed \"s/^..//\" | xargs \$EDITOR"
 alias last="git diff HEAD~1 --raw | grep -o '[^ ]*$' | sed 's/^..//' | sed \"s/.*->//\" | xargs \$EDITOR"
 
 function __run() {
-  declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="./run.sh" ["BUILD"]="blaze")
+  declare -A project_type=( ["package.json"]="npm run" ["cargo.toml"]="cargo" ["Cargo.toml"]="cargo" ["run.sh"]="bash ./run.sh" ["test.sh"]="bash ./test.sh" ["BUILD"]="blaze")
 
   for config_file manager in ${(kv)project_type}; do
     if [[ -f "./$config_file" ]]; then
